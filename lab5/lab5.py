@@ -1,6 +1,6 @@
 import numpy as np 
  
- 
+# матрица преобразований для одного звена робота 
 def get_matrix(link_length_a, link_twist_alpha, link_offset_d, joint_angle_theta):
     try:
         a = float(link_length_a)
@@ -30,7 +30,7 @@ def task_1(O1, O2, O3, O4, O5, v_O1, v_O2, v_O3, v_O4, v_O5, debug=False):
     c = 7.375 
     d = 4.125 
     e = 1.125 
- 
+    # кгловые скорости
     v_O = np.array([[v_O1, v_O2, v_O3, v_O4, v_O5]])
     if debug:
         print(v_O)
@@ -48,19 +48,28 @@ def task_1(O1, O2, O3, O4, O5, v_O1, v_O2, v_O3, v_O4, v_O5, debug=False):
     T05 = np.matmul(T04, T45) 
  
     T_matrices = [T01, T02, T03, T04, T05]
-    # Z - список осей 
+    # базовая система координат плюс направления каждого звена в глобальной системе координат
     Z = np.array([np.array([0, 0, 1])] + [T[0:3, 2] for T in T_matrices])
+    #print(Z)
+    # координаты точек каждого звена в глобальной системе координат
     P = np.stack([T0i[0:3, 3] for i, T0i in enumerate([T01, T02, T03, T04, T05])], axis=0)
+    #print(P)
+    # Добавляем в начало P строку 0 0 0 , т.к это базовая точка
     P = np.vstack((np.array([0, 0, 0]), P))
+    #print(P)
+    # якобиан линейно скорости (гометрический подход через век. проивзедения)
+    J_l = np.array([np.cross(Z[i], P[-1]-P[i]) for i in range(5)]) # вклад каждого звена в линейную скорость
+    print(J_l)
+    # скобиан угловой скорости 
+    J_a = Z[:5]
 
-    J_l = np.array([np.cross(Z[i], P[-1]-P[i]) for i in range(5)])
-    J_a = Z[:5] # Берём первые 5 элементов из Z
+    J_l = J_l.T
+    J_a = J_a.T
 
-    J_l = J_l.T  # Транспонируем J_l
-    J_a = J_a.T  # Транспонируем J_a
+    # размерность (n, 3) и (1, n) 
 
-    v = J_l.dot(v_O.T)
-    w = J_a.dot(v_O.T)
+    v = J_l.dot(v_O.T) #  вектор линейно скорости конечно эффектора
+    w = J_a.dot(v_O.T) # вектор угловой скорости конечного эффектора
  
     return v, w 
  
@@ -93,16 +102,15 @@ def task_2(O1, O2, O3, O4, O5, O6, v_O1, v_O2, v_O3, v_O4, v_O5, v_O6, debug=Fal
     T06 = np.matmul(T05, T56)
  
     T_matrices = [T01, T02, T03, T04, T05, T06]
-    # Z - список осей 
     Z = np.array([np.array([0, 0, 1])] + [T[0:3, 2] for T in T_matrices])
     P = np.stack([T0i[0:3, 3] for i, T0i in enumerate([T01, T02, T03, T04, T05, T06])], axis=0)
     P = np.vstack((np.array([0, 0, 0]), P))
 
     J_l = np.array([np.cross(Z[i], P[-1]-P[i]) for i in range(6)])
-    J_a = Z[:6] # Берём первые 5 элементов из Z
+    J_a = Z[:6]
 
-    J_l = J_l.T  # Транспонируем J_l
-    J_a = J_a.T  # Транспонируем J_a
+    J_l = J_l.T
+    J_a = J_a.T
 
     v = J_l.dot(v_O.T)
     w = J_a.dot(v_O.T)

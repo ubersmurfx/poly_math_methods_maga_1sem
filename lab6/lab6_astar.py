@@ -156,8 +156,8 @@ if __name__=="__main__":
         '''
         карты из лабораторной работы
         '''
-        test_start_cell = (1, 2)
-        test_dest_cell  = (1, 9)
+        test_start_cell = (6, 2)
+        test_dest_cell  = (8, 9)
         stable_test_input_map = np.array([
             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
@@ -178,7 +178,7 @@ if __name__=="__main__":
         plt.show()
 
 
-    execution_time = timeit.timeit(huge_task, number=1)
+    execution_time = timeit.timeit(stable_normal_map_task, number=1)
     print(f"Время выполнения stable_normal_map_task: {execution_time:.4f} секунд")
 
     
