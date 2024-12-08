@@ -90,9 +90,7 @@ def main():
 
 if __name__=="__main__":
     i = 0
-    while i < 10:
-        i =+ 1
+    while i < 3:
+        i = i + 1
         main()
         continue
-
-    
