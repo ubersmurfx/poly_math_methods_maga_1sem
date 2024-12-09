@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 import random
-import math
 import keyboard
 from time import sleep
-import threading
 
 class Point:
     def __init__(self, x=0, y=0):
@@ -20,51 +18,47 @@ class Triangle:
         plt.plot(x, y, color + '-')
         plt.fill(x,y, color='gray', alpha=0.2)
 
+def cross_product(o, a, b):
+    return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x)
 
-def is_point_to_triangle(p, t):
-    for i in range(3):
-        j = (i + 1) % 3
-        k = (p.x - t.ds[i].x) * (t.ds[i].y - t.ds[j].y) - (p.y - t.ds[i].y) * (t.ds[i].x - t.ds[j].x)
-        if k < 0:
-            return False
-    return True
+def is_point_in_triangle(p, t):
+    d1 = cross_product(t.ds[0], t.ds[1], p)
+    d2 = cross_product(t.ds[1], t.ds[2], p)
+    d3 = cross_product(t.ds[2], t.ds[0], p)
 
-def is_intersect_line(a1, a2, b1, b2):
-    b = Point(a2.x - a1.x, a2.y - a1.y)
-    d = Point(b2.x - b1.x, b2.y - b1.y)
+    has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+    has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
 
-    dot = b.x * d.y - b.y * d.x
-    if dot == 0:
-        return False
+    return not (has_neg and has_pos)
 
-    c = Point(b1.x - a1.x, b1.y - a1.y)
-    t = (c.x * d.y - c.y * d.x) / dot
-    if t < 0.0 or t > 1.0:
-        return False
+def do_intersect(a1, a2, b1, b2):
+    d = cross_product(a1, a2, b1)
+    e = cross_product(a1, a2, b2)
+    f = cross_product(b1, b2, a1)
+    g = cross_product(b1, b2, a2)
+    return (d > 0 and e < 0 or d < 0 and e > 0) and (f > 0 and g < 0 or f < 0 and g > 0)
 
-    t = (c.x * b.y - c.y * b.x) / dot
-    return not (t < 0.0 or t > 1.0)
 
 def is_intersect_triangle(a, b):
-    for p in range(3):
-        if is_point_to_triangle(a.ds[p], b) or is_point_to_triangle(b.ds[p], a):
-            return True
-
+    if is_point_in_triangle(a.ds[0], b) or is_point_in_triangle(a.ds[1], b) or is_point_in_triangle(a.ds[2], b) or \
+       is_point_in_triangle(b.ds[0], a) or is_point_in_triangle(b.ds[1], a) or is_point_in_triangle(b.ds[2], a):
+        return True
     for i in range(3):
         for j in range(3):
-            if is_intersect_line(a.ds[i], a.ds[(i + 1) % 3], b.ds[j], b.ds[(j + 1) % 3]):
+            if do_intersect(a.ds[i], a.ds[(i + 1) % 3], b.ds[j], b.ds[(j + 1) % 3]):
                 return True
     return False
 
 
+
 def main():
     a = Triangle(
-            Point(round(random.uniform(0, 300), 1), 50), 
+            Point(90, 50), 
             Point(150, round(random.uniform(0, 300), 1)), 
             Point(round(random.uniform(0, 300), 1), 100)
         )
     b= Triangle(
-            Point(round(random.uniform(0, 300), 1), 50), 
+            Point(50, 50), 
             Point(150, round(random.uniform(0, 300), 1)), 
             Point(round(random.uniform(0, 300), 1), 100)
         )
@@ -84,13 +78,13 @@ def main():
     plt.ylim(0, 300)
     plt.grid(True)
     plt.show(block=False)
-    plt.pause(1)
+    plt.pause(5)
     plt.close('all')
     plt.clf()
 
 if __name__=="__main__":
     i = 0
-    while i < 3:
+    while i < 10:
         i = i + 1
         main()
         continue

@@ -18,18 +18,18 @@ def reconstruct_path(parent, current):
 def aStar_grid(input_map, start_coords, dest_coords, draw_map=True):
     nrows, ncols = input_map.shape
     map = input_map  
-    g_score = np.full(map.shape, np.inf)
-    h_score = np.full(map.shape, np.inf)
-    f_score = np.full(map.shape, np.inf)
+    g_score = np.full(map.shape, np.inf) # расстояние от стартовой до текущей
+    h_score = np.full(map.shape, np.inf) # эвричтиская оценка 
+    f_score = np.full(map.shape, np.inf) # сумма
     parent = {}
 
     g_score[start_coords] = 0
     h_score[start_coords] = heuristic(start_coords, dest_coords)
     f_score[start_coords] = g_score[start_coords] + h_score[start_coords]
 
-    priority_queue = [(f_score[start_coords], start_coords)]
-    expanded_nodes = set()
-    frames = []
+    priority_queue = [(f_score[start_coords], start_coords)] # нужно обработать
+    expanded_nodes = set() # обработанные клетки
+    frames = [] # карта нка ждом шагу
 
     while priority_queue:
         f, current = heapq.heappop(priority_queue)
@@ -70,7 +70,7 @@ def visualize_path(input_map, path, frames):
         ax.imshow(frames[i], cmap=plt.cm.gray, interpolation='nearest')
         ax.set_title('Поиск А*')
 
-    ani = animation.FuncAnimation(fig, animate, frames=len(frames), interval=200)
+    ani = animation.FuncAnimation(fig, animate, frames=len(frames), interval=5)
 
     # Final path visualization
     input_map_with_path = np.copy(input_map)
@@ -142,8 +142,8 @@ if __name__=="__main__":
         plt.show()
 
     def huge_task():
-        big_end_cell=(49, 49)
-        big_input_map = generate_random_obstacles(50, 50, obstacle_probability)
+        big_end_cell=(199, 199)
+        big_input_map = generate_random_obstacles(200, 200, obstacle_probability)
         print(big_input_map)
         route, num_expanded,frames = aStar_grid(big_input_map, start_cell, big_end_cell, draw_map=True)
         visualize_path(big_input_map, route,frames)
