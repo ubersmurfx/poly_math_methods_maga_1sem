@@ -116,7 +116,7 @@ def print_matrix(matrix):
 
 if __name__=="__main__":
   #plotPos()
-  #random_generator()
+  random_generator()
   n = 10
   spiral = spiral_matrix(n)
   print_matrix(spiral)

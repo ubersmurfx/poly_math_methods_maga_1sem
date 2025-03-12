@@ -28,8 +28,6 @@ T_global_robot = np.array([[np.cos(theta_robot), -np.sin(theta_robot), x_robot],
 
 laser_points_local = np.vstack((scan * np.cos(angle), scan * np.sin(angle), np.ones(len(angle))))
 
-
-
 laser_points_global = T_global_robot @ T_robot_laser @ laser_points_local
 
 
