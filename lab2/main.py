@@ -80,7 +80,6 @@ plt.grid(True)
 plt.legend()
 
 
-# Add annotations (less frequent for better readability)
 for i in range(0, len(positions), 100):
     x, y, theta = positions[i]
     plt.annotate(f"({x:.2f}, {y:.2f})\nθ={theta:.2f} rad", (x, y), textcoords="offset points", xytext=(5, 5), ha='left')
