@@ -22,10 +22,19 @@ def distance(x1, y1, x2, y2):
 
 x, y, theta = 1.5, 2.0, np.pi / 2
 
+commands_def = [
+    (0.3, 0.3, 3),
+    (0.1, -0.1, 1),
+    (0.2, 0, 2)
+]
+
 commands = [
-    (0.3, 0.3, 3),  # c1
-    (0.1, -0.1, 1), # c2
-    (0.2, 0, 2)     # c3
+    (0.3, 0.3, 3),
+    (0.1, -0.1, 1),
+    (0.2, 0, 2),
+    (1, 1, 2),
+    (-0.1, 0.1, 0.5),
+    (1, 1, 2)
 ]
 
 l = 0.5
@@ -33,17 +42,16 @@ step_size = 0.01
 
 positions = [(x, y, theta)]
 
-for v_l, v_r, t_total in commands:
+for v_l, v_r, t_total in commands_def:
     t = 0
     x_prev = x
     y_prev = y
     while t < t_total:
-        dt = min(t_total - t, 0.01) #This line is crucial for controlling the time step
+        dt = min(t_total - t, step_size)
         x_next, y_next, theta_next = diffdrive(x, y, theta, v_l, v_r, dt, l)
         dist = distance(x,y, x_next, y_next)
 
         if dist >= step_size:
-            # Interpolate to get a position exactly at 0.01m
             ratio = step_size/dist
             x_interp = x + ratio * (x_next-x)
             y_interp = y + ratio * (y_next-y)
@@ -73,7 +81,7 @@ plt.legend()
 
 
 # Add annotations (less frequent for better readability)
-for i in range(0, len(positions), 100): #add annotations every 10th point
+for i in range(0, len(positions), 100):
     x, y, theta = positions[i]
     plt.annotate(f"({x:.2f}, {y:.2f})\nθ={theta:.2f} rad", (x, y), textcoords="offset points", xytext=(5, 5), ha='left')
 
