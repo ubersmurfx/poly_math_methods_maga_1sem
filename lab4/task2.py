@@ -1,51 +1,42 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def odo_process_model(xt, ut, alpha, sampling_method=None):
-    x, y, theta = xt
-    dr1, dr2, dt = ut
-    a1, a2, a3, a4 = alpha
-    if sampling_method is None:
-        noise = np.random.normal(0, np.array([a1, a2, a3, a4])) # Box-Muller по умолчанию
-    else:
-        noise = sampling_method(0, np.array([a1*a1, a2*a2, a3*a3, a4*a4]))  # Вариант с другими методами
+def sample_normal_distribution(std_dev):
+    return np.random.normal(0, std_dev)
 
-    noise1, noise2, noise3, noise4 = noise
-    
-    dr1 += noise1
-    dr2 += noise2
-    dt += noise3
+def motion_model_odometry(x_t, u_t, alpha):
+    x, y, theta = x_t
+    delta_rot1, delta_trans, delta_rot2 = u_t
 
-    x += (dr1 + dr2)/2 * np.cos(theta + dt + noise4)
-    y += (dr1 + dr2)/2 * np.sin(theta + dt + noise4)
-    theta += dt + noise4
-    return np.array([x, y, theta])
+    # добавил угол
+    delta_rot1_hat = delta_rot1 + sample_normal_distribution(alpha[0] * abs(delta_rot1) + alpha[1] * delta_trans)
+    delta_trans_hat = delta_trans + sample_normal_distribution(alpha[2] * delta_trans + alpha[3] * (abs(delta_rot1) + abs(delta_rot2)))
+    delta_rot2_hat = delta_rot2 + sample_normal_distribution(alpha[0] * abs(delta_rot2) + alpha[1] * delta_trans)
 
+    # новая поза
+    x_new = x + delta_trans_hat * np.cos(theta + delta_rot1_hat)
+    y_new = y + delta_trans_hat * np.sin(theta + delta_rot1_hat)
+    theta_new = theta + delta_rot1_hat + delta_rot2_hat
 
-xt = np.array([2.0, 4.0, 0.0])
-ut = np.array([np.pi/2, 0.0, 1.0])
+    return np.array([x_new, y_new, theta_new])  
+
+x_t = np.array([2.0, 4.0, 0.0])
+u_t = np.array([np.pi / 2, 1.0, 0.0])
 alpha = np.array([0.1, 0.1, 0.01, 0.01])
-n_simulations = 5000
 
-positions = [odo_process_model(xt, ut, alpha) for _ in range(n_simulations)]
+num_samples = 5000
+samples = np.zeros((num_samples, 2))
 
-x_coords = np.array([pos[0] for pos in positions])
-y_coords = np.array([pos[1] for pos in positions])
+for i in range(num_samples):
+    x_t1 = motion_model_odometry(x_t, u_t, alpha)
+    samples[i] = x_t1[:2]
 
-plt.figure(figsize=(8, 6))
-plt.scatter(x_coords, y_coords, s=1, alpha=0.5, label='Robot Positions')
-plt.scatter(2.0, 4.0, s=50, label='robot initial pose')
-
-# Calculate and plot the average position
-avg_x = np.mean(x_coords)
-avg_y = np.mean(y_coords)
-plt.scatter(avg_x, avg_y, color='red', s=50, marker='x', label='Average Position')
-
-
-plt.xlabel("X координата")
-plt.ylabel("Y координата")
-plt.title("Положения робота (5000 симуляций)")
+    # Визуализация
+plt.figure(figsize=(8, 8))
+plt.scatter(samples[:, 0], samples[:, 1], s=1, alpha=0.5, label='Predicted positions')
+plt.plot(x_t[0], x_t[1], 'ro', label='Initial position')
+plt.xlabel('X position')
+plt.ylabel('Y position')
 plt.legend()
-plt.xlim(1.75, 2.75)
-plt.ylim(3.75, 5)
+plt.title('5000 Samples of Robot Motion Model')
 plt.show()
